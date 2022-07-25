@@ -1,0 +1,193 @@
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="fire" [fullScreen]="true"></ngx-spinner>
+<p-dialog styleClass=""
+[header]="pinModalHeaderLabel"
+[(visible)]="displayPinModal"
+position="top-left"
+[modal]="true"
+[baseZIndex]="10000"
+[draggable]="false"
+[resizable]="false"
+[maximizable]="true"
+[style]="{ width: '50vw' }"
+[breakpoints]="{ '960px': '75vw', '640px': '100vw' }"
+(onHide)="closePinModal($event)">
+  <p-tabView styleClass="tabview-custom" (onChange)="handleChange($event)">
+    <p-tabPanel>
+      <ng-template pTemplate="header">
+        <i class="pi pi-map-marker mr-2"></i>
+        <span>Pin Info</span>
+      </ng-template>
+      <app-pin-form
+        [savedPins]="savedPins"
+        [newlyCreatedPins]="newlyCreatedPins"
+        [updatingPinsMap]="updatingPinsMap"
+        [currentPin]="currentPin"
+        [currentPinIndex]="currentPinIndex"
+        [currentUserId]="currentUserId"
+        [displayPinModal]="displayPinModal"
+        [enablePinEditMode]="enablePinEditMode"
+        [submitted]="submitted"
+        (savedPinsUpdate)="savedPins = $event"
+        (newlyCreatedPinsUpdate)="newlyCreatedPins = $event"
+        (updatingPinsMapUpdate)="getUpdatedPinsMap($event)"
+        (displayPinModalUpdate)="displayPinModal = $event"
+        (enablePinEditModeUpdate)="enablePinEditMode = $event"
+      ></app-pin-form>      
+      <!-- <ng-template pTemplate="footer"> -->
+
+      <!-- </ng-template> -->
+    </p-tabPanel>
+    <p-tabPanel header="Future Trips" [disabled]="!currentPin || !currentPin.locationName">
+      <ng-template pTemplate="header">
+        <i class="pi pi-calendar mr-2"></i>
+        <span>Create Your Future Trip</span>
+      </ng-template>
+      <form [formGroup]="futureTripEditForm">
+        <div class="formgrid grid p-fluid p-0">
+          <div class="col-12 field">
+            <label for="tripName"><b>Trip Name</b></label>
+            <input pInputText type="text" class="form-control inputfield" name="tripName" id="tripName"
+              formControlName="tripName" required>
+          </div>
+          <div class="col-12 field">
+            <label for="tripDescription"><b>Trip Description</b></label>
+            <p-editor formControlName="tripDescription" name="tripDescription" id="tripDescription"
+              [style]="{'height':'320px'}" required></p-editor>
+          </div>
+          <div class="col-4 field">
+            <label for="tripDate"><b>Trip Date</b></label>
+            <input pInputText type="date" class="form-control inputfield" name="tripDate" id="tripDate"
+              formControlName="tripDate" min="{{currentDate}}" required>
+          </div>
+          <div class="col-12 field">
+            <label for="locationName"><b>Location Name</b></label>
+            <input pInputText type="text" class="form-control inputfield" name="locationName" id="locationName"
+              formControlName="locationName">
+          </div>
+        </div>
+        <div class="field flex flex-wrap justify-content-end">
+          <button pButton icon="pi pi-check" label="Save" (click)="saveFutureTrip()" type="submit"
+            class="p-button-md mr-2 mt-2" [disabled]="!futureTripEditForm.valid || !futureTripEditForm.dirty"></button>
+          <p-button type="button" icon="pi pi-times" (click)="displayPinModal = false" label="Cancel"
+            class="p-button-md mt-2"></p-button>
+        </div>
+      </form>
+    </p-tabPanel>
+    <p-tabPanel header="Future Trips">
+      <ng-template pTemplate="header">
+        <i class="pi pi-calendar mr-2"></i>
+        <span>Future Trips</span>
+      </ng-template>
+      <div *ngIf="!currentPinFutureTrips || currentPinFutureTrips.length === 0">
+        <span>Oops!! No Future Trips for Current Location</span>
+      </div>
+      <div *ngFor="let trip of currentPinFutureTrips" style="margin: 10px;">
+        <p-panel header="{{trip.tripName}}" [toggleable]="true">
+          <div class="grid">
+            <div class="col-6">
+              <h5>Location</h5>
+              <span>{{trip.pin?.locationName}}</span>
+            </div>
+            <div class="col-6">
+              <h5>Trip Date</h5>
+              <span>{{trip.tripDate | date:'longDate' :'+0000'}}</span>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="col-6">
+              <h5>User Name</h5>
+              <p>{{trip.user.firstName + ' ' + trip.user.lastName}}</p>
+            </div>
+            <div class="col-6">
+              <h5>User Email Id</h5>
+              <p>{{trip.user.emailId}}</p>
+            </div>
+          </div>
+          <div>
+            <p-fieldset legend="Description">
+              <div [innerHTML]="trip.htmlDescription"></div>
+            </p-fieldset>
+          </div>
+        </p-panel>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
+</p-dialog>
+<p-dialog
+  header="Map Control Instructions"
+  [(visible)]="showInfoWindow"
+  position="center"
+  [modal]="true"
+  [baseZIndex]="10000"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '50vw' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '100vw' }"
+>
+<p>To create a Pin: <strong>Single Click</strong></p>
+<p>To add/edit Pin Details: <strong>Double Click on the Pin</strong></p>
+<p>To shift Center of Circle: <strong>Right Click on Map OR Drag the Circle Center</strong></p>
+<p>To change Radius: <strong>Drag the Circle edge to increase or decrease value</strong></p>
+<p>Center Coordinates and Radius can also be changed using the keyboard controls.</p>
+<br>
+<p><strong>Pin Color Indicators:</strong></p>
+<p><span style="color: green;">Green:</span> Your created Pins</p>
+<p><span style="color: red;">Red:</span> Pins created by other Users</p>
+<p><span style="color: darkgoldenrod;">Yellow:</span> Unsaved Pin (on Pin creation)</p>
+<p><strong style="color: blue;">Blue:</strong> Pin in edit mode and can be dragged around to update coordinates</p>
+</p-dialog>
+<p-panel styleClass="my-3" [header]="mapPanelHeader">
+  <ng-template pTemplate="icons">
+    <button
+      pButton
+      class="p-panel-header-icon p-link"
+      icon="pi pi-exclamation-circle"
+      (click)="displayInfoWindow()"
+    ></button>
+  </ng-template>
+  <div class="map">
+    <agm-map [latitude]="latitude" [longitude]="longitude" [zoom]="zoom" (mapClick)="createPin($event)"
+      (mapRightClick)="shiftCenter($event)" [disableDefaultUI]="false" [streetViewControl]="false">
+      <agm-marker *ngFor="let m of savedPins; let i = index; trackBy: identifyPin" [latitude]="m.latitude"
+        [longitude]="m.longitude" [markerDraggable]="!m.isSaved || m.isDraggable" [iconUrl]="m.iconUrl"
+        (markerDblClick)="openPinModal(m, i)" (dragEnd)="pinDragEnd(m, i, $event)">
+        <ng-container *ngIf="m?.locationName != ''">
+          <agm-info-window>
+            <strong>{{ m.locationName }}</strong>
+          </agm-info-window>
+        </ng-container>
+      </agm-marker>
+
+      <agm-circle [latitude]="latitude" [longitude]="longitude" [radius]="radius" [circleDraggable]="true"
+        [editable]="true" [fillOpacity]="0.1" [clickable]="false" (centerChange)="centerChange($event)"
+        (radiusChange)="radiusChange($event)">
+      </agm-circle>
+    </agm-map>
+  </div>
+</p-panel>
+<div class="p-card my-3">
+  <div class="grid p-fluid p-3">
+    <div class="col-8 xl:col-2 field">
+      <label for="radius" class="mb-2">Radius:</label>
+      <p-inputNumber [ngModel]="radius | meterToKilometer" (ngModelChange)="convertKilometerToMeter($event)"
+        suffix=" kms" styleClass="inputfield" [showButtons]="true" buttonLayout="horizontal" inputId="radius"
+        spinnerMode="horizontal" [step]="10" decrementButtonClass="p-button-primary"
+        incrementButtonClass="p-button-primary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus">
+      </p-inputNumber>
+    </div>
+    <div class="col-6 xl:col-2 field">
+      <label for="latitude" class="mb-2">Latitude:</label>
+      <p-inputNumber [(ngModel)]="latitude" inputId="latitude" styleClass="inputfield" mode="decimal"
+        [minFractionDigits]="2" [maxFractionDigits]="2" [min]="-90.00" [max]="90.00"></p-inputNumber>
+    </div>
+    <div class="col-6 xl:col-2 field">
+      <label for="longitude" class="mb-2">Longitude:</label>
+      <p-inputNumber [(ngModel)]="longitude" inputId="longitude" styleClass="inputfield" mode="decimal"
+        [minFractionDigits]="2" [maxFractionDigits]="2" [min]="-180.00" [max]="180.00"></p-inputNumber>
+    </div>
+    <div class="col-2 xl:col-2 field mt-2">
+      <button pButton pRipple type="button" title="Go to Current Location" icon="gps-icon"
+        class="p-button-rounded p-button-primary xl:mt-3" (click)="setCurrentLocation()"></button>
+    </div>
+  </div>
+</div>

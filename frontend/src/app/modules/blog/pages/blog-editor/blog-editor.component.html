@@ -1,0 +1,143 @@
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="fire"
+  [fullScreen]="true"
+></ngx-spinner>
+<div class="flex justify-content-center my-4">
+  <div class="md:w-8">
+    <p-panel header="Blog Editor">
+      <form [formGroup]="blogForm" (ngSubmit)="submitBlogForm()" id="blogForm">
+        <div class="formgrid grid p-fluid p-0">
+          <div class="col-12 field">
+            <label for="blogTitle">Title:</label>
+            <input
+              pInputText
+              type="text"
+              class="form-control inputfield"
+              name="blogTitle"
+              id="blogTitle"
+              formControlName="blogTitle"
+              required
+            />
+            <ng-container
+              *ngIf="
+                (blogFormSubmitted && blogFormControls['blogTitle']?.errors) ||
+                (blogFormControls['blogTitle']?.errors &&
+                  blogFormControls['blogTitle']?.dirty)
+              "
+            >
+              <div
+                *ngIf="blogFormControls['blogTitle']?.errors?.['required']"
+                class="flex justify-content-center mt-3"
+              >
+                <p-message
+                  severity="error"
+                  text="Location Name is required"
+                ></p-message>
+              </div>
+              <div
+                *ngIf="blogFormControls['blogTitle']?.errors?.['maxlength']"
+                class="flex justify-content-center mt-3"
+              >
+                <p-message
+                  severity="error"
+                  text="Blog Title cannot be more than 255 characters"
+                ></p-message>
+              </div>
+            </ng-container>
+          </div>
+          <div class="col-12 field">
+            <label for="blogDescription">Blog Content: </label>            
+            <p-editor formControlName="blogDescription" [style]="{'height':'40vh'}"></p-editor>
+            <ng-container
+              *ngIf="
+                (blogFormSubmitted && blogFormControls['blogDescription']?.errors) ||
+                (blogFormControls['blogDescription']?.errors &&
+                  blogFormControls['blogDescription']?.dirty)
+              "
+            >
+              <div
+                *ngIf="blogFormControls['blogDescription']?.errors?.['required']"
+                class="flex justify-content-center mt-3"
+              >
+                <p-message
+                  severity="error"
+                  text="Blog Content is required"
+                ></p-message>
+              </div>
+              <div
+                *ngIf="blogFormControls['blogDescription']?.errors?.['maxlength']"
+                class="flex justify-content-center mt-3"
+              >
+                <p-message
+                  severity="error"
+                  text="Blog Content cannot be more than 65535 characters"
+                ></p-message>
+              </div>              
+            </ng-container>
+          </div>
+          <ng-container *ngIf="savedBlogImage != null">
+            <div class="col-12 field">
+              <div class="mb-2">Saved Image:</div>
+              <p-image
+                [src]="savedBlogImage"
+                alt="Image"
+                height="300"
+                width="300"
+                styleClass="avatar-image"
+              ></p-image>
+            </div>
+            <div class="col-2 field">
+              <button
+                pButton
+                icon="pi pi-trash"
+                type="button"
+                class="p-button-md p-button-rounded p-button-outlined p-button-danger"
+                (click)="deleteSavedBlogImage()"
+              ></button>
+            </div>
+          </ng-container>
+          <div class="col-12 field">
+            <label for="blogImage"
+              >Blog Cover Image: <strong>{{ uploadedFilename }}</strong></label
+            >
+            <p-fileUpload
+              #imageUpload
+              name="blogImage"
+              accept="image/jpeg, image/png"
+              [showUploadButton]="false"
+              [maxFileSize]="1000000"
+              [fileLimit]="1"
+              [customUpload]="true"
+              (onSelect)="myUploader($event)"
+              (onClear)="onBlogImageClear($event)"
+              (onRemove)="onBlogImageClear($event)"
+              styleClass="mt-1"
+            ></p-fileUpload>
+          </div>
+        </div>
+        <div class="field flex flex-wrap justify-content-end">
+          <button
+            pButton
+            form="blogForm"
+            icon="pi pi-check"
+            label="Save"
+            type="submit"
+            class="p-button-md p-button-rounded p-button-info mr-2 mt-2"
+            [disabled]="!blogForm.valid"
+          ></button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            label="Cancel"
+            class="p-button-md p-button-outlined p-button-rounded p-button-warning mt-2"
+            (click)="cancelBlogForm()"
+          ></button>
+        </div>
+      </form>
+    </p-panel>
+  </div>
+</div>

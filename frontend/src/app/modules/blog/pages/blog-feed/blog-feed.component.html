@@ -1,0 +1,54 @@
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="fire"
+  [fullScreen]="true"
+></ngx-spinner>
+<div class="flex justify-content-center align-items-center my-3">
+  <div class="w-full lg:w-8">
+    <p-fieldset legend="Blog Feed">
+      <div
+        class="flex flex-wrap flex-row justify-content-around my-3"
+      >
+        <ng-container *ngIf="blogList.length > 0; else blogFeedEmptyView">
+          <div>
+            <p-card
+              *ngFor="let blog of blogList"
+              styleClass="p-card-shadow my-3"
+            >
+              <div class="grid">
+                <ng-container *ngIf="blog?.blogImage">
+                  <div class="col-12 xl:col-4">
+                    <img
+                      class="card-image cursor-pointer"
+                      alt="Card"
+                      width="400"
+                      height="400"
+                      [src]="blog?.blogImage"
+                      (click)="navigateToBlog(blog?.blogId)"
+                    />
+                  </div>
+                </ng-container>
+                <div class="col-12" [class.md:col-8]="blog?.blogImage">
+                  <h2
+                    class="cursor-pointer"
+                    (click)="navigateToBlog(blog?.blogId)"
+                  >
+                    {{ blog?.blogTitle }}
+                  </h2>
+                  <h4>By {{ blog?.blogAuthor }}</h4>
+                  <h5>Posted On: {{ blog?.blogCreationDate }}</h5>
+                  <p class="text-blue-700 underline cursor-pointer" (click)="navigateToBlog(blog?.blogId)">Read more</p>
+                </div>
+              </div>
+            </p-card>
+          </div>
+        </ng-container>
+        <ng-template #blogFeedEmptyView>
+          <strong>There are no blogs yet...</strong>
+        </ng-template>
+      </div>
+    </p-fieldset>
+  </div>
+</div>

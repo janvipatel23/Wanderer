@@ -1,0 +1,19 @@
+// :host ::ng-deep {
+//     .p-card#user-profile-card{
+//         background-color: var(--blue-100) !important;
+//     }
+// } 
+
+:host ::ng-deep {
+    .user-profile-card {
+        background-color: var(--blue-50) !important;
+    }
+    .avatar-image img{
+        border-radius: 50% !important;
+    }
+}
+
+// .user-profile-detail {
+//     background-color: var(--bluegray-50);
+//     border-radius: 20%;
+// }

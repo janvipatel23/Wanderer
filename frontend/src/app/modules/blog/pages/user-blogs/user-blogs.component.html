@@ -1,0 +1,87 @@
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="fire"
+  [fullScreen]="true"
+></ngx-spinner>
+<p-dialog
+  (onHide)="resetSelectedBlogId()"
+  header="Confirm Deletion"
+  [(visible)]="displayResponsive"
+  [breakpoints]="{ '1920px': '50vh', '640px': '75vw' }"
+  [style]="{ width: '50vw' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <p>Are you sure you want to delete the Blog?</p>
+  <ng-template pTemplate="footer">
+    <p-button
+      (click)="resetSelectedBlogId()"
+      label="No"
+      styleClass="p-button-info p-button-text"
+    ></p-button>
+    <p-button
+      (click)="deleteBlog()"
+      label="Yes"
+      styleClass="p-button-danger p-button-text"
+    ></p-button>
+  </ng-template>
+</p-dialog>
+<div class="flex justify-content-center align-items-center my-3">
+  <div class="w-8">
+    <p-fieldset legend="Your Blogs">
+      <div
+        class="flex flex-wrap flex-direction-row justify-content-center align-items-start my-3"
+      >
+        <ng-container *ngIf="blogList.length > 0; else noUserBlogsView">
+          <p-card
+            *ngFor="let blog of blogList"
+            [header]="blog?.blogTitle"
+            [subheader]="'Posted On: ' + blog?.blogCreationDate"
+            [style]="{ width: '360px' }"
+            styleClass="p-card-shadow m-3"
+          >
+            <ng-container *ngIf="blog?.blogImage">
+              <ng-template pTemplate="header">
+                <img
+                  alt="Card"
+                  class="card-image"
+                  [src]="blog?.blogImage"
+                  (click)="navigateToBlog(blog?.blogId)"
+                />
+              </ng-template>
+            </ng-container>            
+            <ng-template pTemplate="footer">
+              <div class="flex justify-content-around">
+                <p-button
+                  label="Edit"
+                  icon="pi pi-pencil"
+                  type="button"
+                  styleClass="p-button-rounded p-button-raised"
+                  (click)="navigateToBlog(blog?.blogId)"
+                ></p-button>
+                <p-button
+                  label="View"
+                  icon="pi pi-eye"
+                  type="button"
+                  styleClass="p-button-rounded p-button-info p-button-raised"
+                  (click)="navigateToSingleBlog(blog?.blogId)"
+                ></p-button>
+                <p-button
+                  label="Delete"
+                  icon="pi pi-trash"
+                  styleClass="p-button-danger p-button-rounded p-button-raised p-button-outlined"
+                  (click)="showResponsiveDialog(blog?.blogId)"
+                ></p-button>
+            </div>
+            </ng-template>
+          </p-card>
+        </ng-container>
+        <ng-template #noUserBlogsView>
+          <strong>You have no blogs yet...</strong>
+        </ng-template>
+      </div>
+    </p-fieldset>
+  </div>
+</div>

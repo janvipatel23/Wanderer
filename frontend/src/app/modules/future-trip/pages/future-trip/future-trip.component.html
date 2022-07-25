@@ -1,0 +1,76 @@
+<ngx-spinner bdColor="rgba(0, 0, 0, 0.8)" size="medium" color="#fff" type="fire" [fullScreen]="true"></ngx-spinner>
+<div>
+    <p-card header="Welcome to Future Trip" [style]="{'min-height': '70vh', 'margin': '1em'}">
+        <div *ngIf="!trips || trips.length === 0">
+            <span>You haven't created any Future Trip yet!</span>
+        </div>
+
+        <div *ngFor="let trip of trips" style="margin: 10px;">
+            <p-panel header="{{trip.tripName}}" [toggleable]="true">
+                <ng-template pTemplate="icons">
+                    <button class="p-panel-header-icon p-link" (click)="edit(trip)">
+                        <span class="pi pi-pencil"></span>
+                    </button>
+                    <button class="p-panel-header-icon p-link" (click)="delete(trip.tripId)">
+                        <span class="pi pi-trash"></span>
+                    </button>
+                </ng-template>
+                <div class="grid">
+                    <div class="col-6">
+                        <h5>Location</h5>
+                        <span>{{trip.pin?.locationName}}</span>
+                    </div>
+                    <div class="col-6">
+                        <div>
+                            <h5>Trip Date</h5>
+                            <span>{{trip.tripDate | date:'longDate' :'+0000'}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p-fieldset legend="Description">
+                        <div [innerHTML]="trip.htmlDescription"></div>
+                    </p-fieldset>
+                </div>
+            </p-panel>
+        </div>
+    </p-card>
+</div>
+
+<p-dialog header="Edit Trip Details" [(visible)]="displayBasic" [modal]="true" [style]="{width: '50vw'}"
+    [draggable]="false">
+    <ng-template pTemplate="header">
+        <span><b>Edit Trip Details</b></span>
+    </ng-template>
+    <form [formGroup]="futureTripEditForm">
+        <div class="formgrid grid p-fluid p-0">
+            <div class="col-12 field">
+                <label for="tripName"><b>Trip Name</b></label>
+                <input pInputText type="text" class="form-control inputfield" name="tripName" id="tripName"
+                    formControlName="tripName" required>
+            </div>
+            <div class="col-12 field">
+                <label for="tripDescription"><b>Trip Description</b></label>
+                <p-editor formControlName="tripDescription" [style]="{'height':'320px'}" name="tripDescription"
+                    required></p-editor>
+            </div>
+            <div class="col-4 field">
+                <label for="tripDate"><b>Trip Date</b></label>
+                <input pInputText type="date" class="form-control inputfield" name="tripDate" id="tripDate"
+                    formControlName="tripDate" min="{{currentDate}}" required>
+            </div>
+            <div class="col-12 field">
+                <label for="locationName"><b>Location Name</b></label>
+                <input pInputText type="text" class="form-control inputfield" name="locationName" id="locationName"
+                    formControlName="locationName">
+            </div>
+        </div>
+        <div class="field flex flex-wrap justify-content-end">
+            <button pButton icon="pi pi-check" label="Save" (click)="save()" type="submit" class="p-button-md mr-2 mt-2"
+                [disabled]="!futureTripEditForm.valid || !futureTripEditForm.dirty"></button>
+            <p-button type="button" icon="pi pi-times" (click)="displayBasic = false" label="Cancel"
+                class="p-button-md mt-2"></p-button>
+        </div>
+    </form>
+
+</p-dialog>

@@ -1,0 +1,11 @@
+:host ::ng-deep {
+    .user-profile-card {
+        background-color: var(--blue-50) !important;
+    }
+    .avatar-image img{
+        border-radius: 50% !important;
+    }
+    .p-card-body{
+        padding-top: 0;        
+    }
+}

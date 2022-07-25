@@ -1,0 +1,128 @@
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="fire"
+  [fullScreen]="true"
+></ngx-spinner>
+<div
+  class="flex flex-column lg:flex-row align-items-center lg:align-items-start justify-content-center my-4"
+>
+  <div class="w-full lg:w-6 mx-2">
+    <p-panel [header]="blogTitle || 'Blog Title'">
+      <div class="grid">
+        <ng-container *ngIf="savedBlogImage">
+          <div class="col-12 flex justify-content-center">
+            <div>
+              <img
+                width="100%"
+                height="auto"
+                [src]="savedBlogImage"
+                [alt]="blogTitle"
+              />
+            </div>
+          </div>
+        </ng-container>
+        <div class="col-12 blog-description" [innerHTML]="blogDescription">
+        </div>
+      </div>
+    </p-panel>
+  </div>
+  <div class="w-full lg:w-4 mx-2">
+    <p-fieldset legend="Comments" styleClass="mt-4">
+      <p-card styleClass="custom-card">
+        <form
+          [formGroup]="commentForm"
+          (ngSubmit)="submitCommentForm()"
+          id="commentForm"
+        >
+          <p class="mb-2 mt-1">
+            <strong>Add a Comment: </strong>({{
+              commentFormControls["comment"]?.value?.length || 0
+            }}
+            / 255)
+          </p>
+          <textarea
+            id="pinComment"
+            pInputTextarea
+            formControlName="comment"
+            [autoResize]="true"
+            rows="5"
+            cols="45"
+            style="width: 100%"
+          ></textarea
+          ><br />
+          <ng-container
+            *ngIf="
+              (commentFormSubmitted &&
+                commentFormControls['comment']?.errors) ||
+              (commentFormControls['comment']?.errors &&
+                commentFormControls['comment']?.dirty)
+            "
+          >
+            <div
+              *ngIf="commentFormControls['comment']?.errors?.['required']"
+              class="flex justify-content-start mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Comment cannot be empty"
+              ></p-message>
+            </div>
+            <div
+              *ngIf="commentFormControls['comment']?.errors?.['maxlength']"
+              class="flex justify-content-start mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Comment cannot be more than 255 characters"
+              ></p-message>
+            </div>
+          </ng-container>
+          <p-button
+            form="commentForm"
+            type="submit"
+            label="Submit"
+            styleClass="p-button-sm p-button-info p-button-raised p-button-rounded mt-3"
+            icon="pi pi-arrow-right"
+            [disabled]="!commentForm.valid"
+          ></p-button>
+        </form>
+      </p-card>
+      <div class="ml-2 mt-5 mb-1">
+        <p class="text-lg font-bold mb-0">All Comments</p>
+      </div>
+      <div class="comment-box">
+        <ng-container *ngIf="commentsList.length>0; else noCommentsView">       
+          <p-card
+            *ngFor="let commentObject of commentsList.slice().reverse()"
+            styleClass="custom-card mb-3"
+          >
+            <ng-template pTemplate="header" styleClass="custom-card-header">
+              <div
+                class="custom-card-header flex flex-wrap justify-content-between"
+              >
+                <div>
+                  {{
+                    commentObject?.user?.firstName +
+                      " " +
+                      commentObject?.user?.lastName
+                  }}
+                </div>
+                <div>Posted On: {{ commentObject?.date }}</div>
+              </div>
+            </ng-template>
+            <div>
+              <p class="my-0">{{ commentObject?.comment }}</p>
+            </div>
+          </p-card>
+        </ng-container>
+        <ng-template #noCommentsView>
+          <p-card styleClass="custom-card">
+            <div class="text-center">No Comments yet..</div>
+          </p-card>
+        </ng-template>
+      </div>
+    </p-fieldset>
+  </div>
+</div>

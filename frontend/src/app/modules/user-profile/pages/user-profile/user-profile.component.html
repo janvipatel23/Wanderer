@@ -1,0 +1,131 @@
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="fire"
+  [fullScreen]="true"
+></ngx-spinner>
+<p-dialog
+  [header]="editProfileButtonLabel"
+  [(visible)]="modalDisplay"
+  [baseZIndex]="10000"
+>
+  <!-- [style]="{ height: '50vw' }" -->
+  <form [formGroup]="saveForm" (ngSubmit)="onSubmitClick()">
+    <div class="p-field mb-3">
+      <label for="firstName"><strong>First Name: </strong></label>
+      <input
+        pInputText
+        type="text"
+        class="form-control"
+        name="firstName"
+        id="firstName"
+        formControlName="firstName"
+        required
+      />
+      <!-- Error Message -->
+      <ng-container
+        *ngIf="
+          (submitted && f['firstName']?.errors) ||
+          (f['firstName']?.errors && f['firstName']?.dirty)
+        "
+      >
+        <div
+          *ngIf="f['firstName']?.errors?.['required']"
+          class="flex justify-content-center mt-3"
+        >
+          <p-message severity="error" text="First Name is required"></p-message>
+        </div>
+      </ng-container>
+    </div>
+    <div class="p-field mb-3">
+      <label for="lastName"><strong>Last Name: </strong></label>
+      <input
+        pInputText
+        type="text"
+        class="form-control"
+        name="lastName"
+        id="lastName"
+        formControlName="lastName"
+        required
+      />
+      <!-- Error Message -->
+      <ng-container
+        *ngIf="
+          (submitted && f['lastName']?.errors) ||
+          (f['lastName']?.errors && f['lastName']?.dirty)
+        "
+      >
+        <div
+          *ngIf="f['lastName']?.errors?.['required']"
+          class="flex justify-content-center mt-3"
+        >
+          <p-message severity="error" text="Last Name is required"></p-message>
+        </div>
+      </ng-container>
+    </div>
+    <div class="p-field mb-3">
+      <label for="profileImage"
+        ><strong>New Profile Image: </strong> {{ uploadedFilename }}</label
+      >
+      <p-fileUpload
+        #imageUpload
+        name="profileImage"
+        accept="image/*"
+        [showUploadButton]="false"
+        [maxFileSize]="1000000"
+        [fileLimit]="1"
+        [customUpload]="true"
+        (onSelect)="myUploader($event)"
+        (onClear)="onProfileImageClear($event)"
+        (onRemove)="onProfileImageClear($event)"
+        styleClass="mt-1"
+      ></p-fileUpload>
+    </div>
+    <div class="flex justify-content-end mt-3">
+      <div>
+        <button
+          pButton
+          type="submit"
+          [disabled]="!saveForm.valid"
+          class="p-button-sm"
+        >
+          Update
+        </button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+<div class="grid">
+  <div class="col-12 md:col-6 md:col-offset-3">
+    <p-panel [header]="title">
+      <div class="flex justify-content-center mb-2">
+        <p-image
+          [src]="f['profileImage'].value"
+          alt="Image"
+          height="200"
+          width="200"
+          styleClass="avatar-image"
+        ></p-image>
+      </div>
+      <p-card styleClass="user-profile-card">
+        <ng-template pTemplate="header" styleClass="mb-2">
+          <button
+            pButton
+            type="button"
+            [label]="editProfileButtonLabel"
+            class="p-button-raised p-button-rounded p-button-sm p-button-outlined"
+            (click)="showModal()"
+          ></button>
+        </ng-template>
+        <div class="user-profile-detail py-2">
+          <strong>Name: {{ firstName }} {{ lastName }}</strong>
+        </div>
+        <p-divider></p-divider>
+        <div class="user-profile-detail py-2">
+          <strong>Email: {{ emailId }}</strong>
+        </div>
+      </p-card>
+    </p-panel>
+  </div>
+</div>

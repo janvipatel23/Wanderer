@@ -1,0 +1,25 @@
+agm-map {
+    height: 60vh;
+}
+
+:host ::ng-deep {
+    .gps-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        background-image: url("/assets/svgs/gps-icon.svg");
+    }
+    .custom-dialog{
+        .p-dialog-header{
+            background-color: var(--surface-d);            
+        }
+        .p-dialog-footer{
+            background-color: var(--surface-d);
+        }
+        .p-dialog-content{
+            background-color: var(--surface-d);
+        }
+    }
+    .tabview-custom {
+        background-color: var(--surface-d);
+    }
+}

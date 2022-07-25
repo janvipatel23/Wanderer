@@ -1,0 +1,485 @@
+<ng-container
+  *ngIf="
+    currentPin?.isSaved && currentPin?.pinId != -1 && !enablePinEditMode;
+    else pinFormTemplate
+  "
+>
+  <div class="flex flex-wrap justify-content-between">
+    <ng-container *ngIf="getUserAccess()">
+      <button
+        pButton
+        label="Edit Pin"
+        class="p-button-info p-button-rounded p-button-outlined"
+        icon="pi pi-arrow-circle-right"
+        (click)="setPinEditMode(true)"
+      ></button>
+    </ng-container>
+    <ng-container *ngIf="showBucketListButton">
+      <ng-container
+        *ngIf="currentPinExtended?.isInBucketList; else addToBucketView"
+      >
+        <button
+          pButton
+          label="Delete from Bucket List"
+          class="p-button-info p-button-rounded p-button-outlined p-button-danger"
+          icon="pi pi-minus"
+          (click)="deleteFromBucketList()"
+        ></button>
+      </ng-container>
+      <ng-template #addToBucketView>
+        <button
+          pButton
+          label="Add to Bucket List"
+          class="p-button-info p-button-rounded"
+          icon="pi pi-plus"
+          (click)="addToBucketList()"
+        ></button>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <div class="grid">
+    <div class="col-12">
+      <p-card styleClass="custom-card">
+        <p class="mb-2"><strong>Location Name: </strong></p>
+        <p style="word-break:break-all;">{{ currentPinExtended?.locationName }}</p>
+        <strong>Description: </strong>
+        <p style="word-break:break-all;">
+          {{ currentPinExtended?.description }}
+        </p>
+      </p-card>
+    </div>
+    <ng-container *ngIf="savedPinImages.length > 0">
+      <div class="col-12">
+        <p-card styleClass="custom-card">
+          <p-carousel
+            [value]="savedPinImages"
+            [numVisible]="3"
+            [numScroll]="3"
+            [circular]="false"
+            [responsiveOptions]="responsiveOptions"
+          >
+            <ng-template pTemplate="header">
+              <!-- <h5>Basic</h5> -->
+            </ng-template>
+            <ng-template let-pinImage pTemplate="item">
+              <div class="product-item">
+                <div class="product-item-content">
+                  <div class="mb-3">
+                    <img
+                      [src]="pinImage?.imageUrl"
+                      alt=""
+                      class="product-image"
+                    />
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </p-carousel>
+        </p-card>
+      </div>
+    </ng-container>
+    <div class="col-12">
+      <p-card styleClass="custom-card">
+        <form></form>
+        <p class="mt-1">
+          <strong>Average Rating: </strong
+          >{{ averagePinRating == 0 ? "No ratings yet" : averagePinRating }}
+        </p>
+        <p-rating
+          styleClass="rating-box"
+          [cancel]="false"
+          [readonly]="true"
+          [(ngModel)]="averagePinRating"
+        ></p-rating>
+        <form
+          [formGroup]="ratingForm"
+          (ngSubmit)="submitRatingForm()"
+          id="ratingForm"
+        >
+          <p class="mt-3"><strong>Add a Rating: </strong></p>
+          <p-rating
+            styleClass="rating-box"
+            formControlName="pinRating"
+          ></p-rating>
+          <p-button
+            form="ratingForm"
+            type="submit"
+            styleClass="p-button-sm p-button-info p-button-raised p-button-rounded rating-submit-btn mt-2"
+            icon="pi pi-arrow-right"
+            [disabled]="!ratingForm.valid"
+          ></p-button>
+        </form>
+      </p-card>
+    </div>
+    <div class="col-12">
+      <p-card styleClass="custom-card">
+        <form
+          [formGroup]="commentForm"
+          (ngSubmit)="submitCommentForm()"
+          id="commentForm"
+        >
+          <p class="mb-2 mt-1">
+            <strong>Add a Comment: </strong>({{
+              commentFormControls["comment"]?.value?.length || 0
+            }}
+            / 255)
+          </p>
+          <textarea
+            id="pinComment"
+            pInputTextarea
+            formControlName="comment"
+            [autoResize]="true"
+            rows="5"
+            cols="45"
+            style="width: 100%"
+          ></textarea
+          ><br />
+          <ng-container
+            *ngIf="
+              (commentFormSubmitted &&
+                commentFormControls['comment']?.errors) ||
+              (commentFormControls['comment']?.errors &&
+                commentFormControls['comment']?.dirty)
+            "
+          >
+            <div
+              *ngIf="commentFormControls['comment']?.errors?.['required']"
+              class="flex justify-content-start mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Comment cannot be empty"
+              ></p-message>
+            </div>
+            <div
+              *ngIf="commentFormControls['comment']?.errors?.['maxlength']"
+              class="flex justify-content-start mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Comment cannot be more than 255 characters"
+              ></p-message>
+            </div>
+          </ng-container>
+          <p-button
+            form="commentForm"
+            type="submit"
+            label="Submit"
+            styleClass="p-button-sm p-button-info p-button-raised p-button-rounded mt-3"
+            icon="pi pi-arrow-right"
+            [disabled]="!commentForm.valid"
+          ></p-button>
+        </form>
+      </p-card>
+    </div>
+    <div class="col-12">
+      <p-panel header="All Comments" styleClass="comment-panel">
+        <ng-container
+          *ngIf="
+            currentPinExtended?.pinComments?.length > 0;
+            else noCommentsView
+          "
+        >
+          <p-card
+            *ngFor="
+              let commentObject of currentPinExtended?.pinComments
+                ?.slice()
+                .reverse()
+            "
+            styleClass="custom-card mb-3"
+          >
+            <ng-template pTemplate="header" styleClass="custom-card-header">
+              <div
+                class="custom-card-header flex flex-wrap justify-content-between"
+              >
+                <div>
+                  {{
+                    commentObject?.user?.firstName +
+                      " " +
+                      commentObject?.user?.lastName
+                  }}
+                </div>
+                <div>{{ commentObject?.date }}</div>
+              </div>
+            </ng-template>
+            <div>
+              <strong>{{ commentObject?.comment }}</strong>
+            </div>
+          </p-card>
+        </ng-container>
+        <ng-template #noCommentsView>
+          <strong>No comments yet...</strong>
+        </ng-template>
+      </p-panel>
+    </div>
+  </div>
+</ng-container>
+<ng-template #pinFormTemplate>
+  <ng-container *ngIf="getUserAccess()">
+    <p-dialog      
+      header="Confirm Pin Deletion"
+      [(visible)]="displayDeleteModal"
+      [breakpoints]="{ '1920px': '50vh', '640px': '75vw' }"
+      [style]="{ width: '50vw' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+      <p>Are you sure you want to delete the Blog?</p>
+      <ng-template pTemplate="footer">
+        <p-button
+          (click)="displayDeleteModal = false"
+          label="No"
+          styleClass="p-button-info p-button-text"
+        ></p-button>
+        <p-button
+          (click)="deletePin()"
+          label="Yes"
+          styleClass="p-button-danger"
+        ></p-button>
+      </ng-template>
+    </p-dialog>
+    <form [formGroup]="pinForm" (ngSubmit)="savePinWithImages()" id="pinForm">
+      <ng-container *ngIf="currentPin?.pinId != -1 && currentPin?.isSaved">
+        <div class="flex flex-wrap justify-content-between field">
+          <button
+            pButton
+            class="p-button-outlined p-button-info p-button-raised p-button-rounded"
+            type="button"
+            icon="pi pi-arrow-left"
+            (click)="setPinEditMode(false)"
+          ></button>
+          <button
+            pButton
+            icon="pi pi-trash"
+            type="button"
+            class="p-button-rounded p-button-danger"
+            (click)="displayDeleteModal = true"
+          ></button>
+        </div>
+      </ng-container>
+      <div class="formgrid grid p-fluid p-0">
+        <div class="col-12 field">
+          <label for="locationName">Location Name:</label>
+          <input
+            pInputText
+            type="text"
+            class="form-control inputfield"
+            name="locationName"
+            id="locationName"
+            formControlName="locationName"
+            required
+          />
+          <ng-container
+            *ngIf="
+              (submitted && pinFormControls['locationName']?.errors) ||
+              (pinFormControls['locationName']?.errors &&
+                pinFormControls['locationName']?.dirty)
+            "
+          >
+            <div
+              *ngIf="pinFormControls['locationName']?.errors?.['required']"
+              class="flex justify-content-center mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Location Name is required"
+              ></p-message>
+            </div>
+            <div
+              *ngIf="pinFormControls['locationName']?.errors?.['maxlength']"
+              class="flex justify-content-center mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Location Name cannot be more than 255 characters"
+              ></p-message>
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-12 field">
+          <label for="description"
+            >Description: ({{
+              pinFormControls["description"]?.value?.length || 0
+            }}
+            / 1000)</label
+          >
+          <textarea
+            id="description"
+            pInputTextarea
+            formControlName="description"
+            [autoResize]="true"
+            rows="5"
+            cols="45"
+          ></textarea>
+          <ng-container
+            *ngIf="
+              (submitted && pinFormControls['description']?.errors) ||
+              (pinFormControls['description']?.errors &&
+                pinFormControls['description']?.dirty)
+            "
+          >
+            <div
+              *ngIf="pinFormControls['description']?.errors?.['required']"
+              class="flex justify-content-center mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Description is required"
+              ></p-message>
+            </div>
+            <div
+              *ngIf="pinFormControls['description']?.errors?.['maxlength']"
+              class="flex justify-content-center mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Description cannot be more than 1000 characters"
+              ></p-message>
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-6 field">
+          <label for="pinLatitude">Latitude:</label>
+          <input
+            pInputText
+            type="number"
+            class="form-control inputfield"
+            name="pinLatitude"
+            id="pinLatitude"
+            formControlName="pinLatitude"
+            required
+          />
+          <ng-container
+            *ngIf="
+              (submitted && pinFormControls['pinLatitude']?.errors) ||
+              (pinFormControls['pinLatitude']?.errors &&
+                pinFormControls['pinLatitude']?.dirty)
+            "
+          >
+            <div
+              *ngIf="pinFormControls['pinLatitude']?.errors?.['required']"
+              class="flex justify-content-center mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Pin Latitude is required"
+              ></p-message>
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-6 field">
+          <label for="pinLongitude">Longitude:</label>
+          <input
+            pInputText
+            type="number"
+            class="form-control inputfield"
+            name="pinLongitude"
+            id="pinLongitude"
+            formControlName="pinLongitude"
+            required
+          />
+          <ng-container
+            *ngIf="
+              (submitted && pinFormControls['pinLongitude']?.errors) ||
+              (pinFormControls['pinLongitude']?.errors &&
+                pinFormControls['pinLongitude']?.dirty)
+            "
+          >
+            <div
+              *ngIf="pinFormControls['pinLongitude']?.errors?.['required']"
+              class="flex justify-content-center mt-3"
+            >
+              <p-message
+                severity="error"
+                text="Pin Longitude is required"
+              ></p-message>
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-12 field">
+          <ng-container *ngIf="savedPinImages.length > 0">
+            <p-carousel
+              [value]="savedPinImages"
+              [numVisible]="3"
+              [numScroll]="3"
+              [circular]="false"
+              [responsiveOptions]="responsiveOptions"
+              [showIndicators]="false"
+            >
+              <ng-template pTemplate="header">
+                <!-- <h5>Basic</h5> -->
+              </ng-template>
+              <ng-template let-pinImage pTemplate="item">
+                <div class="product-item">
+                  <div class="product-item-content">
+                    <div class="mb-3">
+                      <img
+                        [src]="pinImage?.imageUrl"
+                        alt=""
+                        class="product-image"
+                      />
+                    </div>
+                    <div>
+                      <div class="car-buttons mt-2">
+                        <p-button
+                          type="button"
+                          (click)="deletePinImage(pinImage?.index)"
+                          styleClass="p-button-danger p-button-sm p-button-outlined p-button-rounded mr-2"
+                          icon="pi pi-trash"
+                        ></p-button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-template>
+            </p-carousel>
+          </ng-container>
+          <div class="col-12">
+            <p-fileUpload
+              #imageUpload
+              name="newPinImages"
+              accept="image/jpeg, image/png"
+              [showUploadButton]="false"
+              [maxFileSize]="5000000"
+              [fileLimit]="5"
+              [customUpload]="true"
+              [multiple]="true"
+              styleClass="mt-1"
+              (onSelect)="myUploader($event)"
+              (onRemove)="onPinImageClear($event)"
+              (onClear)="onAllPinImagesClear($event)"
+            ></p-fileUpload>
+          </div>
+        </div>
+      </div>
+      <div class="field flex flex-wrap justify-content-end">
+        <button
+          pButton
+          icon="pi pi-pencil"
+          form="pinForm"
+          label="Edit Coordinates"
+          type="button"
+          class="p-button-md mr-2 mt-2"
+          (click)="editPinCoordinates()"
+        ></button>
+        <button
+          pButton
+          icon="pi pi-check"
+          form="pinForm"
+          label="Save"
+          type="submit"
+          [disabled]="!pinForm.valid || !enablePinModalSaveButton"
+          class="p-button-md mr-2 mt-2"
+        ></button>
+        <p-button
+          type="button"
+          icon="pi pi-times"
+          label="Cancel"
+          class="p-button-md p-button-outlined mt-2"
+          (click)="displayPinModalUpdate.emit(false)"
+        ></p-button>
+      </div>
+    </form>
+  </ng-container>
+</ng-template>

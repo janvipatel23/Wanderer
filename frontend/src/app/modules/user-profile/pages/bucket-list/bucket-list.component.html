@@ -1,0 +1,41 @@
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="fire"
+  [fullScreen]="true"
+></ngx-spinner>
+<div class="flex justify-content-center">
+  <div class="md:w-6">
+    <p-table [value]="bucketList" responsiveLayout="scroll">
+      <ng-template pTemplate="caption">
+        <div class="flex align-items-center justify-content-between">
+          Your Bucket List
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Coordinates</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entity>
+        <tr>
+          <td>{{entity?.pin?.locationName}}</td>
+          <td>{{entity?.pin?.description | slice:0:80}}...</td>
+          <td>{{(entity?.pin?.latitude | number : '1.2-2') + ', ' + (entity?.pin?.longitude | number : '1.2-2')}}</td>
+            <td>
+                <button pButton type="button" class="p-button-rounded p-button-outlined p-button-danger" icon="pi pi-trash" (click)="deleteFromBucketList(entity?.pin?.pinId)"></button>
+            </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="summary">
+        <div class="flex align-items-center justify-content-between">
+          Total Pins : {{bucketList?.length}}
+        </div>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
